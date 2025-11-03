@@ -1,357 +1,1429 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>QR Code Enhancer - Fixed Version</title>
-<style>
-  body {
-    font-family: Inter, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #2D1B4E 0%, #1A0E2E 100%);
-    color: #fff;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
-  }
-  .preview-card {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 16px;
-    min-width: 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-  .qr-container img,
-  .qr-container canvas,
-  .qr-container svg {
-    width: 220px !important;
-    height: 220px !important;
-    max-width: 220px;
-    max-height: 220px;
-    display: block;
-    margin: auto;
-  }
-  .glass-container {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 24px;
-    margin-bottom: 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 18px;
-  }
-  @media (max-width: 1200px) {
-    .glass-container {
-      grid-template-columns: 1fr;
-    }
-  }
-  .download-buttons {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .download-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .download-btn:hover {
-    background: rgba(139, 92, 246, 0.3);
-    transform: translateY(-1px);
-  }
-  #zipFormat {
-    padding: 8px 12px;
-    margin-right: 8px;
-    border-radius: 6px;
-    border: none;
-    font-size: 1rem;
-  }
-  #downloadZipBtn {
-    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-    color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-  }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Enhancer Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #E0E0E0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Iridescent Background */
+        .background-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
+        }
+
+        .background-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(139, 92, 246, 0.3),
+                transparent,
+                rgba(0, 217, 255, 0.3),
+                transparent,
+                rgba(236, 72, 153, 0.3),
+                transparent
+            );
+            animation: iridescent 15s linear infinite;
+        }
+
+        @keyframes iridescent {
+            0% { transform: rotate(0deg) translate(0, 0); }
+            100% { transform: rotate(360deg) translate(50px, 50px); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00D9FF, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #B0B0B0;
+            font-size: 1rem;
+        }
+
+        /* Glass Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        /* Upload Section */
+        .upload-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00D9FF, #8B5CF6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .upload-btn input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            padding: 10px 25px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Settings Section */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .collapsible-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .collapsible-header {
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .collapsible-header h3 {
+            font-size: 1.1rem;
+            color: #00D9FF;
+            font-weight: 600;
+        }
+
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .collapsible-section.collapsed .collapsible-icon {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            padding: 20px;
+            max-height: 1000px;
+            opacity: 1;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible-section.collapsed .collapsible-content {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #B0B0B0;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #E0E0E0;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #00D9FF;
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.1);
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            height: 40px;
+            cursor: pointer;
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch input {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #888;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            left: 22px;
+            background: #00D9FF;
+        }
+
+        .toggle-switch input:checked ~ .toggle-switch {
+            background: rgba(0, 217, 255, 0.2);
+        }
+
+        /* Slider */
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00D9FF;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #00D9FF;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            min-width: 60px;
+            text-align: center;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #00D9FF;
+        }
+
+        /* Preview Section */
+        .preview-section {
+            margin: 30px 0;
+        }
+
+        .preview-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #00D9FF;
+        }
+
+        .preview-row {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+
+        .preview-row::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .preview-row::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .preview-row::-webkit-scrollbar-thumb {
+            background: rgba(0, 217, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        .preview-item {
+            min-width: 200px;
+            max-width: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .preview-image {
+            width: 170px;
+            height: 170px;
+            margin: 0 auto 10px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .preview-image img,
+        .preview-image canvas,
+        .preview-image svg {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .preview-chip {
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(0, 217, 255, 0.2);
+            color: #00D9FF;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .btn-download {
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Export Section */
+        .export-section {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .btn-export {
+            padding: 10px 20px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #8B5CF6;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Data Table */
+        .table-container {
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .collapsible-section.collapsed .table-container {
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        table th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #00D9FF;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table-input {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: #E0E0E0;
+            font-size: 0.85rem;
+        }
+
+        .table-input:focus {
+            outline: none;
+            border-color: #00D9FF;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-item {
+                min-width: 150px;
+                max-width: 150px;
+            }
+
+            .preview-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #B0B0B0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00D9FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #B0B0B0;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        /* Utility */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
+    <div class="background-gradient"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 QR Code Enhancer Pro</h1>
+            <p>Upload, Customize, and Download Enhanced QR Codes</p>
+        </div>
 
-<!-- Global Settings, Code Label Customization, Caption Customization -->
-<div class="glass-container">
-  <div>
-    <h3>Global Settings</h3>
-    <label for="globalCaption">Global Caption</label>
-    <input type="text" id="globalCaption" placeholder="Enter caption for all QR codes" />
-    <br /><br />
-    <label for="qrSize">QR Code Size (px)</label>
-    <select id="qrSize">
-      <option value="220">220px</option>
-      <option value="300">300px</option>
-      <option value="400">400px</option>
-      <!-- Add more if needed -->
-    </select>
-  </div>
-  <div>
-    <h3>Code Label Customization</h3>
-    <!-- Keep toggles bold/italic as is, no UI effect change -->
-    <label>
-      <input type="checkbox" id="codeBold" /> Bold
-    </label>
-    <label>
-      <input type="checkbox" id="codeItalic" /> Italic
-    </label>
-  </div>
-  <div>
-    <h3>Caption Customization</h3>
-    <!-- Same toggles and style -->
-    <label>
-      <input type="checkbox" id="captionBold" /> Bold
-    </label>
-    <label>
-      <input type="checkbox" id="captionItalic" /> Italic
-    </label>
-  </div>
-</div>
+        <!-- Upload Section -->
+        <div class="glass-card upload-section">
+            <label class="upload-btn">
+                📁 Upload QR Codes
+                <input type="file" id="qrUpload" accept="image/*" multiple>
+            </label>
+            <button class="btn-secondary" id="clearBtn">🔄 Reset All</button>
+        </div>
 
-<!-- QR Upload Section -->
-<input type="file" id="fileInput" multiple accept="image/png, image/jpeg, image/svg+xml" />
-<button onclick="handleFileUpload()">Upload QR Codes</button>
+        <!-- Settings Section -->
+        <div class="settings-grid">
+            <!-- Global Settings -->
+            <div class="collapsible-section" id="globalSettings">
+                <div class="collapsible-header" onclick="toggleSection('globalSettings')">
+                    <h3>⚙️ Global Settings</h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label>Output QR Size (px)</label>
+                        <select class="form-control" id="qrSize">
+                            <option value="100">100px</option>
+                            <option value="150">150px</option>
+                            <option value="200" selected>200px</option>
+                            <option value="250">250px</option>
+                            <option value="300">300px</option>
+                            <option value="400">400px</option>
+                            <option value="500">500px</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="customSizeGroup">
+                        <label>Custom Size</label>
+                        <input type="number" class="form-control" id="customSize" min="50" max="1000" value="200">
+                    </div>
+                    <div class="form-group">
+                        <label>Main Caption (Global)</label>
+                        <input type="text" class="form-control" id="mainCaption" placeholder="Enter default caption">
+                    </div>
+                </div>
+            </div>
 
-<!-- Preview Sections -->
-<div style="margin-top: 24px;">
-  <h3>Input QR Codes Original</h3>
-  <div id="inputPreview" style="display: flex; gap: 16px; overflow-x: auto;"></div>
-</div>
-<div style="margin-top: 24px;">
-  <h3>Enhanced QR Codes Output</h3>
-  <div id="outputPreview" style="display: flex; gap: 16px; overflow-x: auto;"></div>
-</div>
+            <!-- Code Label Customization -->
+            <div class="collapsible-section" id="codeLabelSettings">
+                <div class="collapsible-header" onclick="toggleSection('codeLabelSettings')">
+                    <h3>🏷️ Code Label Customization</h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="enableCodeLabel" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enable Code Label</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Font Family</label>
+                        <select class="form-control" id="codeFontFamily">
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Font Size (px)</label>
+                        <input type="number" class="form-control" id="codeFontSize" min="8" max="32" value="14">
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="codeBold">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Bold</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="codeItalic">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Italic</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Gap from QR (mm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="codeGap" min="1" max="10" value="3" step="0.5">
+                            <span class="slider-value" id="codeGapValue">3mm</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Color</label>
+                        <input type="color" class="form-control" id="codeColor" value="#000000">
+                    </div>
+                    <div class="form-group">
+                        <label>Text Alignment</label>
+                        <select class="form-control" id="codeAlign">
+                            <option value="left">Left</option>
+                            <option value="center" selected>Center</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-<!-- Zip Download Option -->
-<div style="margin-top: 24px;">
-  <select id="zipFormat">
-    <option value="png">PNG (ZIP)</option>
-    <option value="jpg">JPG (ZIP)</option>
-    <option value="svg">SVG (ZIP)</option>
-  </select>
-  <button id="downloadZipBtn" onclick="downloadAllZip()">Download All as ZIP</button>
-</div>
+            <!-- Caption Customization -->
+            <div class="collapsible-section" id="captionSettings">
+                <div class="collapsible-header" onclick="toggleSection('captionSettings')">
+                    <h3>📝 Caption Customization</h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="form-group">
+                        <label>Font Family</label>
+                        <select class="form-control" id="captionFontFamily">
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Courier New">Courier New</option>
+                            <option value="Verdana">Verdana</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Font Size (px)</label>
+                        <input type="number" class="form-control" id="captionFontSize" min="8" max="32" value="12">
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="captionBold">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Bold</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="captionItalic">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Italic</span>
+                        </div>
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="captionUnderline">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Underline</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Gap from Code (mm)</label>
+                        <div class="slider-group">
+                            <input type="range" id="captionGap" min="1" max="10" value="3" step="0.5">
+                            <span class="slider-value" id="captionGapValue">3mm</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Color</label>
+                        <input type="color" class="form-control" id="captionColor" value="#000000">
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-item">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="enableSeparator">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>Enable Separator Line</span>
+                        </div>
+                    </div>
+                    <div id="separatorOptions" class="hidden">
+                        <div class="form-group">
+                            <label>Line Thickness (px)</label>
+                            <input type="number" class="form-control" id="separatorThickness" min="1" max="5" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Line Color</label>
+                            <input type="color" class="form-control" id="separatorColor" value="#000000">
+                        </div>
+                        <div class="form-group">
+                            <label>Line Width (% of QR)</label>
+                            <div class="slider-group">
+                                <input type="range" id="separatorWidth" min="30" max="100" value="80" step="5">
+                                <span class="slider-value" id="separatorWidthValue">80%</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Gap from Code (mm)</label>
+                            <div class="slider-group">
+                                <input type="range" id="separatorGapTop" min="1" max="10" value="2" step="0.5">
+                                <span class="slider-value" id="separatorGapTopValue">2mm</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Gap from Caption (mm)</label>
+                            <div class="slider-group">
+                                <input type="range" id="separatorGapBottom" min="1" max="10" value="2" step="0.5">
+                                <span class="slider-value" id="separatorGapBottomValue">2mm</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<script>
-  let qrData = [];
+        <!-- Export Options -->
+        <div class="glass-card export-section hidden" id="exportSection">
+            <button class="btn-export" onclick="exportZip('png')">📦 Download All PNG (ZIP)</button>
+            <button class="btn-export" onclick="exportZip('jpg')">📦 Download All JPG (ZIP)</button>
+            <button class="btn-export" onclick="exportZip('svg')">📦 Download All SVG (ZIP)</button>
+            <button class="btn-export" onclick="exportExcel()">📊 Export to Excel</button>
+            <button class="btn-export" onclick="exportPDF()">📄 Export to PDF</button>
+            <button class="btn-export" onclick="exportCSV()">📋 Export to CSV</button>
+        </div>
 
-  function getQRSize() {
-    const size = document.getElementById('qrSize').value;
-    return parseInt(size) || 220;
-  }
+        <!-- Preview Section -->
+        <div class="glass-card preview-section hidden" id="previewSection">
+            <div class="preview-title">📥 Input QR Codes</div>
+            <div class="preview-row" id="inputPreview">
+                <!-- Input QR previews will be added here -->
+            </div>
+            
+            <div class="preview-title">✨ Enhanced QR Codes</div>
+            <div class="preview-row" id="outputPreview">
+                <!-- Output QR previews will be added here -->
+            </div>
+        </div>
 
-  // Dummy readImageFile and decodeQRCode for example, replace with real code
-  async function readImageFile(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = e => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+        <!-- Data Table -->
+        <div class="collapsible-section hidden" id="dataTableSection">
+            <div class="collapsible-header" onclick="toggleSection('dataTableSection')">
+                <h3>📊 QR Code Data Table</h3>
+                <span class="collapsible-icon">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>Sr. No.</th>
+                                <th>Code</th>
+                                <th>Caption</th>
+                                <th>FE No.</th>
+                                <th>QR Link/Text</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Table rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  async function decodeQRCode(imageData) {
-    // Use your existing QR decoding logic here
-    // For demonstration, returning dummy data:
-    return `CODE-${Math.floor(Math.random() * 10000)}`;
-  }
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@latest/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  async function handleFileUpload() {
-    const input = document.getElementById('fileInput');
-    if (!input.files.length) {
-      alert('Please select files to upload.');
-      return;
-    }
-    qrData = [];
-    for (const file of input.files) {
-      try {
-        const imageData = await readImageFile(file);
-        const code = await decodeQRCode(imageData);
-        qrData.push({
-          originalImage: imageData,
-          extractedText: code,
-          code: code,
-          caption: '',
-          feNumber: '',
-          qrContainer: null,
+    <script>
+        // Global variables
+        let qrDataArray = [];
+        let currentSettings = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateSliderValues();
         });
-      } catch (e) {
-        console.error('Error decoding QR:', e);
-      }
-    }
-    renderPreviews();
-  }
 
-  function renderPreviews() {
-    const inputPreview = document.getElementById('inputPreview');
-    const outputPreview = document.getElementById('outputPreview');
-    inputPreview.innerHTML = '';
-    outputPreview.innerHTML = '';
+        // Setup event listeners
+        function setupEventListeners() {
+            // File upload
+            document.getElementById('qrUpload').addEventListener('change', handleFileUpload);
+            
+            // Clear button
+            document.getElementById('clearBtn').addEventListener('click', clearAll);
+            
+            // Settings changes
+            document.getElementById('qrSize').addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    document.getElementById('customSizeGroup').classList.remove('hidden');
+                } else {
+                    document.getElementById('customSizeGroup').classList.add('hidden');
+                }
+                regenerateAllQR();
+            });
+            
+            document.getElementById('customSize').addEventListener('input', regenerateAllQR);
+            document.getElementById('mainCaption').addEventListener('input', updateAllCaptions);
+            
+            // Code label settings
+            document.getElementById('enableCodeLabel').addEventListener('change', regenerateAllQR);
+            document.getElementById('codeFontFamily').addEventListener('change', regenerateAllQR);
+            document.getElementById('codeFontSize').addEventListener('input', regenerateAllQR);
+            document.getElementById('codeBold').addEventListener('change', regenerateAllQR);
+            document.getElementById('codeItalic').addEventListener('change', regenerateAllQR);
+            document.getElementById('codeGap').addEventListener('input', function() {
+                document.getElementById('codeGapValue').textContent = this.value + 'mm';
+                regenerateAllQR();
+            });
+            document.getElementById('codeColor').addEventListener('input', regenerateAllQR);
+            document.getElementById('codeAlign').addEventListener('change', regenerateAllQR);
+            
+            // Caption settings
+            document.getElementById('captionFontFamily').addEventListener('change', regenerateAllQR);
+            document.getElementById('captionFontSize').addEventListener('input', regenerateAllQR);
+            document.getElementById('captionBold').addEventListener('change', regenerateAllQR);
+            document.getElementById('captionItalic').addEventListener('change', regenerateAllQR);
+            document.getElementById('captionUnderline').addEventListener('change', regenerateAllQR);
+            document.getElementById('captionGap').addEventListener('input', function() {
+                document.getElementById('captionGapValue').textContent = this.value + 'mm';
+                regenerateAllQR();
+            });
+            document.getElementById('captionColor').addEventListener('input', regenerateAllQR);
+            
+            // Separator settings
+            document.getElementById('enableSeparator').addEventListener('change', function() {
+                document.getElementById('separatorOptions').classList.toggle('hidden', !this.checked);
+                regenerateAllQR();
+            });
+            document.getElementById('separatorThickness').addEventListener('input', regenerateAllQR);
+            document.getElementById('separatorColor').addEventListener('input', regenerateAllQR);
+            document.getElementById('separatorWidth').addEventListener('input', function() {
+                document.getElementById('separatorWidthValue').textContent = this.value + '%';
+                regenerateAllQR();
+            });
+            document.getElementById('separatorGapTop').addEventListener('input', function() {
+                document.getElementById('separatorGapTopValue').textContent = this.value + 'mm';
+                regenerateAllQR();
+            });
+            document.getElementById('separatorGapBottom').addEventListener('input', function() {
+                document.getElementById('separatorGapBottomValue').textContent = this.value + 'mm';
+                regenerateAllQR();
+            });
+        }
 
-    const qrSize = getQRSize();
+        // Update slider values
+        function updateSliderValues() {
+            document.getElementById('codeGapValue').textContent = document.getElementById('codeGap').value + 'mm';
+            document.getElementById('captionGapValue').textContent = document.getElementById('captionGap').value + 'mm';
+            document.getElementById('separatorWidthValue').textContent = document.getElementById('separatorWidth').value + '%';
+            document.getElementById('separatorGapTopValue').textContent = document.getElementById('separatorGapTop').value + 'mm';
+            document.getElementById('separatorGapBottomValue').textContent = document.getElementById('separatorGapBottom').value + 'mm';
+        }
 
-    qrData.forEach((item, index) => {
-      // Input preview
-      const inputCard = document.createElement('div');
-      inputCard.className = 'preview-card';
-      const inputImg = document.createElement('img');
-      inputImg.src = item.originalImage;
-      inputImg.style.width = '220px';
-      inputImg.style.height = '220px';
-      inputCard.appendChild(inputImg);
-      inputPreview.appendChild(inputCard);
+        // Toggle collapsible sections
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('collapsed');
+        }
 
-      // Output preview (generate simple QR SVG or canvas - here dummy placeholder)
-      const outputCard = document.createElement('div');
-      outputCard.className = 'preview-card';
-      outputCard.id = 'output-index-' + index;
-      
-      const qrContainer = document.createElement('div');
-      qrContainer.className = 'qr-container';
+        // Handle file upload
+        async function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            if (files.length === 0) return;
+            
+            // Clear previous data
+            qrDataArray = [];
+            
+            // Show loading
+            const inputPreview = document.getElementById('inputPreview');
+            inputPreview.innerHTML = '<div class="loading"><div class="spinner"></div><p>Reading QR Codes...</p></div>';
+            
+            // Process each file
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    const qrData = await readQRFromImage(file);
+                    if (qrData) {
+                        qrDataArray.push({
+                            id: i,
+                            originalImage: file,
+                            data: qrData,
+                            code: extractCode(qrData),
+                            caption: document.getElementById('mainCaption').value || '',
+                            feNumber: ''
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error reading QR code:', error);
+                }
+            }
+            
+            // Display results
+            if (qrDataArray.length > 0) {
+                displayPreviews();
+                buildDataTable();
+                document.getElementById('previewSection').classList.remove('hidden');
+                document.getElementById('dataTableSection').classList.remove('hidden');
+                document.getElementById('exportSection').classList.remove('hidden');
+            } else {
+                inputPreview.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>No QR codes detected. Please upload valid QR code images.</p></div>';
+            }
+        }
 
-      // Create dummy canvas for output QR with white bg for downloads
-      const canvas = document.createElement('canvas');
-      canvas.width = qrSize;
-      canvas.height = qrSize;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#000';
-      ctx.font = '30px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(item.extractedText, qrSize / 2, qrSize / 2);
-      qrContainer.appendChild(canvas);
+        // Read QR code from image
+        function readQRFromImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        
+                        if (code) {
+                            resolve(code.data);
+                        } else {
+                            resolve(null);
+                        }
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
 
-      outputCard.appendChild(qrContainer);
+        // Extract code from QR data
+        function extractCode(data) {
+            // Try to find text after '='
+            const equalIndex = data.lastIndexOf('=');
+            if (equalIndex !== -1 && data.length > equalIndex + 1) {
+                const afterEqual = data.substring(equalIndex + 1);
+                return afterEqual.substring(0, 6);
+            }
+            // Otherwise return first 6 characters
+            return data.substring(0, 6);
+        }
 
-      // Download buttons for PNG, JPG, SVG
-      const downloadButtons = document.createElement('div');
-      downloadButtons.className = 'download-buttons';
+        // Display previews
+        function displayPreviews() {
+            const inputPreview = document.getElementById('inputPreview');
+            const outputPreview = document.getElementById('outputPreview');
+            
+            inputPreview.innerHTML = '';
+            outputPreview.innerHTML = '';
+            
+            qrDataArray.forEach((qr, index) => {
+                // Input preview
+                const inputItem = document.createElement('div');
+                inputItem.className = 'preview-item';
+                inputItem.innerHTML = `
+                    <div class="preview-image">
+                        <img src="${URL.createObjectURL(qr.originalImage)}" alt="QR ${index + 1}">
+                    </div>
+                    <div class="preview-chip">${qr.code}</div>
+                `;
+                inputPreview.appendChild(inputItem);
+                
+                // Output preview
+                const outputItem = document.createElement('div');
+                outputItem.className = 'preview-item';
+                outputItem.id = `output-${index}`;
+                outputPreview.appendChild(outputItem);
+                
+                // Generate output QR
+                generateEnhancedQR(index);
+            });
+        }
 
-      ['png', 'jpg', 'svg'].forEach((format) => {
-        const btn = document.createElement('button');
-        btn.className = 'download-btn';
-        btn.textContent = format.toUpperCase();
-        btn.onclick = () => downloadQR(index, format);
-        downloadButtons.appendChild(btn);
-      });
+        // Generate enhanced QR code
+        function generateEnhancedQR(index) {
+            const qr = qrDataArray[index];
+            const outputItem = document.getElementById(`output-${index}`);
+            
+            // Get settings
+            const qrSize = document.getElementById('qrSize').value === 'custom' 
+                ? parseInt(document.getElementById('customSize').value) 
+                : parseInt(document.getElementById('qrSize').value);
+            
+            const enableCodeLabel = document.getElementById('enableCodeLabel').checked;
+            const enableSeparator = document.getElementById('enableSeparator').checked;
+            
+            // Calculate dimensions
+            const mmToPx = 3.7795275591; // 1mm = 3.78px at 96 DPI
+            const codeGap = parseFloat(document.getElementById('codeGap').value) * mmToPx;
+            const captionGap = parseFloat(document.getElementById('captionGap').value) * mmToPx;
+            const separatorGapTop = parseFloat(document.getElementById('separatorGapTop').value) * mmToPx;
+            const separatorGapBottom = parseFloat(document.getElementById('separatorGapBottom').value) * mmToPx;
+            
+            // Create SVG container
+            let totalHeight = qrSize;
+            let yOffset = qrSize;
+            
+            // Calculate total height
+            if (enableCodeLabel) {
+                totalHeight += codeGap + parseInt(document.getElementById('codeFontSize').value);
+                yOffset = totalHeight;
+            }
+            
+            if (qr.caption || qr.feNumber) {
+                if (enableSeparator) {
+                    totalHeight += separatorGapTop + parseInt(document.getElementById('separatorThickness').value) + separatorGapBottom;
+                }
+                totalHeight += captionGap + parseInt(document.getElementById('captionFontSize').value);
+            }
+            
+            // Create SVG
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', qrSize);
+            svg.setAttribute('height', totalHeight);
+            svg.setAttribute('viewBox', `0 0 ${qrSize} ${totalHeight}`);
+            
+            // Generate QR code
+            const qrCanvas = document.createElement('canvas');
+            const qrCodeInstance = new QRCode(qrCanvas, {
+                text: qr.data,
+                width: qrSize,
+                height: qrSize,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Wait for QR generation
+            setTimeout(() => {
+                // Add QR image to SVG
+                const qrImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                qrImage.setAttribute('href', qrCanvas.toDataURL());
+                qrImage.setAttribute('width', qrSize);
+                qrImage.setAttribute('height', qrSize);
+                svg.appendChild(qrImage);
+                
+                let currentY = qrSize;
+                
+                // Add code label
+                if (enableCodeLabel) {
+                    currentY += codeGap;
+                    const codeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    codeText.setAttribute('x', qrSize / 2);
+                    codeText.setAttribute('y', currentY);
+                    codeText.setAttribute('font-family', document.getElementById('codeFontFamily').value);
+                    codeText.setAttribute('font-size', document.getElementById('codeFontSize').value);
+                    codeText.setAttribute('fill', document.getElementById('codeColor').value);
+                    codeText.setAttribute('text-anchor', document.getElementById('codeAlign').value === 'center' ? 'middle' : document.getElementById('codeAlign').value === 'right' ? 'end' : 'start');
+                    
+                    let fontWeight = 'normal';
+                    let fontStyle = 'normal';
+                    if (document.getElementById('codeBold').checked) fontWeight = 'bold';
+                    if (document.getElementById('codeItalic').checked) fontStyle = 'italic';
+                    
+                    codeText.setAttribute('font-weight', fontWeight);
+                    codeText.setAttribute('font-style', fontStyle);
+                    codeText.textContent = qr.code;
+                    svg.appendChild(codeText);
+                    
+                    currentY += parseInt(document.getElementById('codeFontSize').value);
+                }
+                
+                // Add separator line
+                if (enableSeparator && (qr.caption || qr.feNumber)) {
+                    currentY += separatorGapTop;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    const lineWidth = (qrSize * parseInt(document.getElementById('separatorWidth').value)) / 100;
+                    const lineX = (qrSize - lineWidth) / 2;
+                    line.setAttribute('x1', lineX);
+                    line.setAttribute('y1', currentY);
+                    line.setAttribute('x2', lineX + lineWidth);
+                    line.setAttribute('y2', currentY);
+                    line.setAttribute('stroke', document.getElementById('separatorColor').value);
+                    line.setAttribute('stroke-width', document.getElementById('separatorThickness').value);
+                    svg.appendChild(line);
+                    
+                    currentY += parseInt(document.getElementById('separatorThickness').value) + separatorGapBottom;
+                }
+                
+                // Add caption
+                if (qr.caption || qr.feNumber) {
+                    currentY += captionGap;
+                    const captionText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    captionText.setAttribute('x', qrSize / 2);
+                    captionText.setAttribute('y', currentY);
+                    captionText.setAttribute('font-family', document.getElementById('captionFontFamily').value);
+                    captionText.setAttribute('font-size', document.getElementById('captionFontSize').value);
+                    captionText.setAttribute('fill', document.getElementById('captionColor').value);
+                    captionText.setAttribute('text-anchor', 'middle');
+                    
+                    let fontWeight = 'normal';
+                    let fontStyle = 'normal';
+                    let textDecoration = 'none';
+                    if (document.getElementById('captionBold').checked) fontWeight = 'bold';
+                    if (document.getElementById('captionItalic').checked) fontStyle = 'italic';
+                    if (document.getElementById('captionUnderline').checked) textDecoration = 'underline';
+                    
+                    captionText.setAttribute('font-weight', fontWeight);
+                    captionText.setAttribute('font-style', fontStyle);
+                    captionText.setAttribute('text-decoration', textDecoration);
+                    captionText.textContent = qr.caption + qr.feNumber;
+                    svg.appendChild(captionText);
+                }
+                
+                // Store SVG data
+                qrDataArray[index].svgElement = svg;
+                qrDataArray[index].svgString = new XMLSerializer().serializeToString(svg);
+                
+                // Display preview
+                outputItem.innerHTML = `
+                    <div class="preview-image">
+                        ${svg.outerHTML}
+                    </div>
+                    <div class="preview-chip">${qr.code}</div>
+                    <div class="download-buttons">
+                        <button class="btn-download" onclick="downloadQR(${index}, 'png')">PNG</button>
+                        <button class="btn-download" onclick="downloadQR(${index}, 'jpg')">JPG</button>
+                        <button class="btn-download" onclick="downloadQR(${index}, 'svg')">SVG</button>
+                    </div>
+                `;
+            }, 100);
+        }
 
-      outputCard.appendChild(downloadButtons);
+        // Build data table
+        function buildDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            
+            qrDataArray.forEach((qr, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${qr.code}</td>
+                    <td><input type="text" class="table-input" value="${qr.caption}" onchange="updateCaption(${index}, this.value)"></td>
+                    <td><input type="text" class="table-input" value="${qr.feNumber}" onchange="updateFENumber(${index}, this.value)"></td>
+                    <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${qr.data}">${qr.data}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
 
-      outputPreview.appendChild(outputCard);
+        // Update caption
+        function updateCaption(index, value) {
+            qrDataArray[index].caption = value;
+            generateEnhancedQR(index);
+        }
 
-      // Store qrContainer for downloads etc.
-      item.qrContainer = qrContainer;
-    });
-  }
+        // Update FE number
+        function updateFENumber(index, value) {
+            qrDataArray[index].feNumber = value;
+            generateEnhancedQR(index);
+        }
 
-  function downloadFile(blob, filename) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+        // Update all captions
+        function updateAllCaptions() {
+            const mainCaption = document.getElementById('mainCaption').value;
+            qrDataArray.forEach((qr, index) => {
+                if (!qr.caption || qr.caption === '') {
+                    qr.caption = mainCaption;
+                }
+            });
+            buildDataTable();
+            regenerateAllQR();
+        }
 
-  function downloadQR(index, format) {
-    const item = qrData[index];
-    if (!item.qrContainer) return;
-    const qrSize = getQRSize();
+        // Regenerate all QR codes
+        function regenerateAllQR() {
+            qrDataArray.forEach((qr, index) => {
+                generateEnhancedQR(index);
+            });
+        }
 
-    if (format === 'svg') {
-      const svgElem = item.qrContainer.querySelector('svg');
-      if (svgElem) {
-        let serializer = new XMLSerializer();
-        let svgString = serializer.serializeToString(svgElem);
-        // Wrapper for background
-        svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${qrSize}" height="${qrSize}" viewBox="0 0 ${qrSize} ${qrSize}">
-          <rect width="100%" height="100%" fill="white" />
-          ${svgString}
-        </svg>`;
-        const blob = new Blob([svgString], { type: 'image/svg+xml' });
-        downloadFile(blob, `${item.code}.${format}`);
-      } else {
-        alert('SVG not available');
-      }
-    } else {
-      // PNG or JPG download from canvas
-      const canvas = item.qrContainer.querySelector('canvas');
-      if (!canvas) {
-        alert('Canvas not found');
-        return;
-      }
-      const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png';
-      canvas.toBlob((blob) => {
-        if (blob) downloadFile(blob, `${item.code}.${format}`);
-        else alert('Failed to create file');
-      }, mimeType, format === 'jpg' ? 0.95 : undefined);
-    }
-  }
+        // Download single QR code
+        async function downloadQR(index, format) {
+            const qr = qrDataArray[index];
+            const filename = `QR_${qr.code}_${Date.now()}`;
+            
+            if (format === 'svg') {
+                // Download SVG
+                const blob = new Blob([qr.svgString], { type: 'image/svg+xml' });
+                downloadBlob(blob, `${filename}.svg`);
+            } else {
+                // Convert to PNG or JPG
+                const canvas = await svgToCanvas(qr.svgString);
+                canvas.toBlob((blob) => {
+                    downloadBlob(blob, `${filename}.${format}`);
+                }, format === 'png' ? 'image/png' : 'image/jpeg', 0.95);
+            }
+        }
 
-  async function generateQRBlob(item, format) {
-    // For ZIP download of all, similar to downloadQR but returns Blob instead of downloading.
-    const qrSize = getQRSize();
-    if (format === 'svg') {
-      const svgElem = item.qrContainer.querySelector('svg');
-      if (!svgElem) return null;
-      let serializer = new XMLSerializer();
-      let svgString = serializer.serializeToString(svgElem);
-      svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${qrSize}" height="${qrSize}" viewBox="0 0 ${qrSize} ${qrSize}">
-        <rect width="100%" height="100%" fill="white" />
-        ${svgString}
-      </svg>`;
-      return new Blob([svgString], { type: 'image/svg+xml' });
-    } else {
-      const canvas = item.qrContainer.querySelector('canvas');
-      if (!canvas) return null;
-      return new Promise(resolve => {
-        canvas.toBlob(blob => resolve(blob), (format === 'jpg' ? 'image/jpeg' : 'image/png'), (format === 'jpg' ? 0.95 : undefined));
-      });
-    }
-  }
+        // Convert SVG to Canvas
+        function svgToCanvas(svgString) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const blob = new Blob([svgString], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // White background for JPG
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.drawImage(img, 0, 0);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas);
+                };
+                
+                img.src = url;
+            });
+        }
 
-  async function downloadAllZip() {
-    if (qrData.length === 0) {
-      alert('No QR codes available to download.');
-      return;
-    }
-    const format = document.getElementById('zipFormat').value;
-    const zip = new JSZip();
-    for (let i = 0; i < qrData.length; i++) {
-      const blob = await generateQRBlob(qrData[i], format);
-      if (blob) {
-        zip.file(`QR_${qrData[i].code}.${format}`, blob);
-      }
-    }
-    zip.generateAsync({ type: 'blob' }).then((content) => {
-      downloadFile(content, `QRCodes_${format}_${Date.now()}.zip`);
-    });
-  }
-</script>
+        // Download blob
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
+        // Export as ZIP
+        async function exportZip(format) {
+            const zip = new JSZip();
+            
+            for (let i = 0; i < qrDataArray.length; i++) {
+                const qr = qrDataArray[i];
+                const filename = `QR_${qr.code}_${i + 1}`;
+                
+                if (format === 'svg') {
+                    zip.file(`${filename}.svg`, qr.svgString);
+                } else {
+                    const canvas = await svgToCanvas(qr.svgString);
+                    const blob = await new Promise((resolve) => {
+                        canvas.toBlob(resolve, format === 'png' ? 'image/png' : 'image/jpeg', 0.95);
+                    });
+                    zip.file(`${filename}.${format}`, blob);
+                }
+            }
+            
+            const content = await zip.generateAsync({ type: 'blob' });
+            downloadBlob(content, `QR_Codes_${format.toUpperCase()}_${Date.now()}.zip`);
+        }
+
+        // Export to Excel
+        function exportExcel() {
+            const data = qrDataArray.map((qr, index) => ({
+                'Sr. No.': index + 1,
+                'Code': qr.code,
+                'Caption': qr.caption,
+                'FE No.': qr.feNumber,
+                'QR Link/Text': qr.data
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'QR Codes');
+            XLSX.writeFile(wb, `QR_Codes_Data_${Date.now()}.xlsx`);
+        }
+
+        // Export to PDF
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.setFontSize(18);
+            doc.text('QR Code Data', 14, 20);
+            
+            let y = 35;
+            const lineHeight = 8;
+            
+            qrDataArray.forEach((qr, index) => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.text(`${index + 1}. Code: ${qr.code}`, 14, y);
+                y += lineHeight;
+                doc.text(`   Caption: ${qr.caption}${qr.feNumber}`, 14, y);
+                y += lineHeight;
+                doc.text(`   Data: ${qr.data.substring(0, 80)}`, 14, y);
+                y += lineHeight + 3;
+            });
+            
+            doc.save(`QR_Codes_Data_${Date.now()}.pdf`);
+        }
+
+        // Export to CSV
+        function exportCSV() {
+            let csv = 'Sr. No.,Code,Caption,FE No.,QR Link/Text\n';
+            
+            qrDataArray.forEach((qr, index) => {
+                csv += `${index + 1},${qr.code},"${qr.caption}",${qr.feNumber},"${qr.data}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            downloadBlob(blob, `QR_Codes_Data_${Date.now()}.csv`);
+        }
+
+        // Clear all
+        function clearAll() {
+            qrDataArray = [];
+            document.getElementById('qrUpload').value = '';
+            document.getElementById('inputPreview').innerHTML = '';
+            document.getElementById('outputPreview').innerHTML = '';
+            document.getElementById('dataTableBody').innerHTML = '';
+            document.getElementById('previewSection').classList.add('hidden');
+            document.getElementById('dataTableSection').classList.add('hidden');
+            document.getElementById('exportSection').classList.add('hidden');
+            document.getElementById('mainCaption').value = '';
+        }
+    </script>
 </body>
 </html>
